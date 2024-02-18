@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "aqiforecaster-sa"
+version = "0.1.0"
+description = ""
+authors = ["mono <monika.obrocka@pendulum.global>"]
+readme = "README.md"
+packages = [{include = "aqiforecaster_sa"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+loguru = "^0.7.2"
+pandas = "^2.2.0"
+pathlib = "^1.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
