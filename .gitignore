@@ -159,4 +159,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/*
 /config.json
-.idea/aqiforecaster_sa.iml
+aqiforecaster_sa_logs.log
+data/*.json
+data/*.csv

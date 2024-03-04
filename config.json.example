@@ -1,0 +1,6 @@
+{
+    "api_key": "",
+    "base_url": "https://api.waqi.info",
+    "station_id": 14067,
+    "historical_aqi_data": "data/maitland,-none-air-quality.csv"
+}
