@@ -11,6 +11,7 @@ class DataProcessor:
 
         :param location: Path to the data directory.
         """
+        self.timeseries_data_path = None
         self.location = location
         self.csv_files = self.location.glob('*.csv')
         self.aggregated_data_path = None
@@ -55,6 +56,7 @@ class DataProcessor:
         """
         all_dfs = []  # List to hold all the DataFrames
 
+        # Loop through all CSV files, but make sure only the raw files are present
         for file_path in self.csv_files:
             df = self.flatten_and_prepare_data(file_path)
             if not df.empty:
@@ -83,4 +85,5 @@ class DataProcessor:
         # Pivot the DataFrame to have 'datetime' as index, 'parameter' as columns, and 'value' as cell values
         timeseries_df = df.pivot(index='datetime', columns='parameter', values='value')
         final_csv_path = self.location / 'timeseries_data.csv'
+        self.timeseries_data_path = final_csv_path
         timeseries_df.to_csv(final_csv_path)
