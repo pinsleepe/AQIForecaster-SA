@@ -1,5 +1,5 @@
 from loguru import logger
-from aqiforecaster_sa.aqi_data_fetcher import AQIDataFetcher
+from aqiforecaster_sa.data_fetcher import ArchivalDataFetcher
 from aqiforecaster_sa.config_manager import ConfigManager
 from aqiforecaster_sa.data_processor import DataProcessor
 from aqiforecaster_sa.feature_engineer import FeatureEngineer
@@ -7,28 +7,23 @@ from pathlib import Path
 from aqiforecaster_sa.file_handler import FileHandler
 from aqiforecaster_sa.utils import create_iaqi_filename
 
-logger.add("aqiforecaster_sa_logs.log", rotation="10 MB")
+logger.add("aq_logs.log", rotation="10 MB")
 
 config_manager = ConfigManager('config.json')
-api_key = config_manager.get_config_value('api_key')
-base_url = config_manager.get_config_value('base_url')
-station_id = config_manager.get_config_value('station_id')
+bucket_name = config_manager.get_config_value('bucket_name')
+location_id = config_manager.get_config_value('location_id')
 
-fetcher = AQIDataFetcher(api_key, base_url)
+base_path = Path(__file__).parent / 'data'
+fetcher = ArchivalDataFetcher(base_path, bucket_name, location_id)
+fetcher.download_data('2024', '01')
+fetcher.unzip_file()
 
-try:
-    current_aqi_data = fetcher.get_current_aqi(station_id)
-    logger.info(f"Fetched current AQI for station {station_id}")
-except Exception as e:
-    logger.error(f"Failed to fetch current AQI data for station {station_id}: {e}")
-    current_aqi_data = None
 
-base_path = Path(__file__).parent
-file_name = create_iaqi_filename(station_id)
-file_path = base_path/ 'data' / file_name
-file_handler = FileHandler(file_path)
-file_handler.write_json(current_aqi_data)
-
+# base_path = Path(__file__).parent
+# file_name = create_iaqi_filename(station_id)
+# file_path = base_path / 'data' / file_name
+# file_handler = FileHandler(file_path)
+# file_handler.write_json(current_aqi_data)
 
 # processor = DataProcessor()
 # historical_data_csv_path = config_manager.get_config_value('historical_aqi_data')
@@ -42,12 +37,12 @@ file_handler.write_json(current_aqi_data)
 #     logger.error("Failed to process historical data.")
 
 # Process current data
-processor = DataProcessor(current_aqi_data)
-try:
-    logger.info("Current AQI data processed successfully into DataFrame.")
-    logger.info(f"Here are the details: {processor.extract_current_data()}")
-except Exception as e:
-    logger.error(f"Failed to process current AQI data into DataFrame with error {e}.")
+# processor = DataProcessor(current_aqi_data)
+# try:
+#     logger.info("Current AQI data processed successfully into DataFrame.")
+#     logger.info(f"Here are the details: {processor.extract_current_data()}")
+# except Exception as e:
+#     logger.error(f"Failed to process current AQI data into DataFrame with error {e}.")
 
 # # Initialize the feature engineer with your data
 # engineer = FeatureEngineer(historical_df)
