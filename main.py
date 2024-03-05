@@ -14,18 +14,16 @@ bucket_name = config_manager.get_config_value('bucket_name')
 location_id = config_manager.get_config_value('location_id')
 
 base_path = Path(__file__).parent / 'data'
-fetcher = ArchivalDataFetcher(base_path, bucket_name, location_id)
-fetcher.download_data('2024', '01')
-fetcher.unzip_file()
+# fetcher = ArchivalDataFetcher(base_path, bucket_name, location_id)
+# fetcher.download_data('2024', '01')
+# fetcher.unzip_file()
+
+processor = DataProcessor(base_path)
+logger.info(f" CSV files: {processor.csv_files}")
+processor.process_all_csv_files()
+processor.create_parameter_timeseries()
 
 
-# base_path = Path(__file__).parent
-# file_name = create_iaqi_filename(station_id)
-# file_path = base_path / 'data' / file_name
-# file_handler = FileHandler(file_path)
-# file_handler.write_json(current_aqi_data)
-
-# processor = DataProcessor()
 # historical_data_csv_path = config_manager.get_config_value('historical_aqi_data')
 #
 # # Process historical data
