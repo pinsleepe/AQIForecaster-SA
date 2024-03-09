@@ -17,6 +17,8 @@ class ArchivalDataFetcher:
         self.s3_client = boto3.client('s3',
                                       config=Config(signature_version=UNSIGNED))
         self.destination = destination
+        logger.info(f"ArchivalDataFetcher initialized with destination: "
+                    f"{destination} and location_id: {location_id}")
 
     def download_data(self, year, month):
         """
@@ -28,11 +30,10 @@ class ArchivalDataFetcher:
         """
         # Ensure the destination directory exists
         self.destination.mkdir(parents=True, exist_ok=True)
-
         # Format the S3 key prefix
         key_prefix = f'records/csv.gz/locationid={self.location_id}/year={year}/month={month}/'
-
         paginator = self.s3_client.get_paginator('list_objects_v2')
+        logger.debug(f"Starting download for year: {year}, month: {month}")
         try:
             for page in paginator.paginate(Bucket=self.bucket_name, Prefix=key_prefix):
                 for item in page.get('Contents', []):
@@ -55,6 +56,7 @@ class ArchivalDataFetcher:
         :param directory: The directory containing .gz files to be unzipped.
         """
         gz_files = self.destination.glob('*.gz')
+        logger.debug(f"Starting to unzip files in {self.destination}")
         for gz_file in gz_files:
             # Define the output filename by removing '.gz' from the original filename
             output_file = gz_file.with_suffix('')

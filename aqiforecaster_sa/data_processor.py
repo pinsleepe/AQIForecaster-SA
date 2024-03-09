@@ -15,6 +15,7 @@ class DataProcessor:
         self.location = location
         self.csv_files = self.location.glob('*.csv')
         self.aggregated_data_path = None
+        logger.info(f"DataProcessor initialized for location: {self.location}")
 
     def flatten_and_prepare_data(self, file_name: Path):
         """
@@ -42,8 +43,8 @@ class DataProcessor:
             # Reorder the columns to match the desired output
             df_daily = df_daily[['datetime', 'parameter', 'value']]
 
-            logger.info("Data has been flattened and prepared successfully.")
-            logger.debug(f"\n{df_daily.head()}")  # Display the first few rows to verify structure
+            logger.info(f"Data from {file_name} has been flattened and prepared successfully.")
+            logger.debug(f"Processed DataFrame head:\n{df_daily.head()}")
 
             return df_daily
 
@@ -58,10 +59,11 @@ class DataProcessor:
 
         # Loop through all CSV files, but make sure only the raw files are present
         for file_path in self.csv_files:
+            logger.debug(f"Processing file: {file_path}")
             df = self.flatten_and_prepare_data(file_path)
             if not df.empty:
                 all_dfs.append(df)
-                logger.info(f"Processed file {file_path}")
+                logger.info(f"Processed and appended data from {file_path}")
 
         # Concatenate all DataFrames if any exist
         if all_dfs:
@@ -72,18 +74,18 @@ class DataProcessor:
             final_df.to_csv(final_csv_path, index=False)
             logger.info(f"Final aggregated data saved to {final_csv_path}")
         else:
-            logger.info("No data files were processed.")
+            logger.warning("No CSV files were processed. Check if the directory "
+                           "is correct and files are available.")
 
     def create_parameter_timeseries(self):
-        # Read the CSV data into a DataFrame
+        if self.aggregated_data_path and self.aggregated_data_path.exists():
+            df = pd.read_csv(self.aggregated_data_path)
+            df['datetime'] = pd.to_datetime(df['datetime'])
+            timeseries_df = df.pivot(index='datetime', columns='parameter', values='value').reset_index()
+            final_csv_path = self.location / 'timeseries_data.csv'
+            self.timeseries_data_path = final_csv_path
+            timeseries_df.to_csv(final_csv_path, index=False)
+            logger.info(f"Parameter timeseries data saved to {final_csv_path}")
+        else:
+            logger.error(f"Aggregated data path is not set or file does not exist: {self.aggregated_data_path}")
 
-        df = pd.read_csv(self.aggregated_data_path)
-
-        # Convert 'datetime' column to datetime type
-        df['datetime'] = pd.to_datetime(df['datetime'])
-
-        # Pivot the DataFrame to have 'datetime' as index, 'parameter' as columns, and 'value' as cell values
-        timeseries_df = df.pivot(index='datetime', columns='parameter', values='value')
-        final_csv_path = self.location / 'timeseries_data.csv'
-        self.timeseries_data_path = final_csv_path
-        timeseries_df.to_csv(final_csv_path)

@@ -5,6 +5,8 @@ from aqiforecaster_sa.data_processor import DataProcessor
 from aqiforecaster_sa.feature_engineer import FeatureEngineer
 from pathlib import Path
 
+from aqiforecaster_sa.hopsworks_integration import FeatureStoreManager
+
 logger.add("aq_logs.log", rotation="10 MB")
 
 config_manager = ConfigManager('config.json')
@@ -26,3 +28,8 @@ engineer.add_lag_features([1, 2, 3])
 engineer.add_rolling_window_features(3)
 engineer.save_engineered_data(base_path)
 
+feature_store_manager = FeatureStoreManager(config_manager, engineer.engineered_data_path)
+feature_store_manager.login_to_hopsworks()
+feature_store_manager.get_or_create_feature_group()
+feature_store_manager.update_feature_descriptions()
+feature_store_manager.insert_data()
